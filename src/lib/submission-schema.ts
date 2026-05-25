@@ -31,4 +31,4 @@ export const completeRequestSchema = submissionMetaSchema.extend({
 });
 
 export const ACCEPTED_MIME_PREFIXES = ["image/", "video/"];
-export const MAX_TOTAL_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB total per submission
+export const MAX_TOTAL_BYTES = 100 * 1024 * 1024 * 1024; // 100 GB total per submission
