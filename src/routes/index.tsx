@@ -17,20 +17,22 @@ import {
   type SubmissionMeta,
   ACCEPTED_MIME_PREFIXES,
 } from "@/lib/submission-schema";
+import tkmLogo from "@/assets/tkm-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Event Photo & Video Submission" },
+      { title: "TKM Miqaat / Event Photos Submission" },
       {
         name: "description",
         content:
-          "Upload photos and videos from miqaats and events. Files are stored in OneDrive and logged automatically.",
+          "Toloba ul Kulliyaat il Mumenoon — submit photos and videos from miqaats and events.",
       },
     ],
   }),
   component: SubmitPage,
 });
+
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB chunks for uploadUrl PUTs
 
@@ -211,6 +213,11 @@ function SubmitPage() {
       <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-xl">
           <CardHeader className="text-center">
+            <img
+              src={tkmLogo}
+              alt="Toloba ul Kulliyaat il Mumenoon"
+              className="mx-auto mb-4 h-24 w-auto"
+            />
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
@@ -219,6 +226,7 @@ function SubmitPage() {
               Your files have been uploaded and the entry is logged.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-4">
             <a
               href={success.folderLink}
@@ -255,14 +263,20 @@ function SubmitPage() {
     <main className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 text-center">
+          <img
+            src={tkmLogo}
+            alt="Toloba ul Kulliyaat il Mumenoon"
+            className="mx-auto mb-4 h-28 w-auto"
+          />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Miqaat Photo & Video Submission
+            Toloba ul Kulliyaat il Mumenoon — Miqaat / Event Photos
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Share photos and videos from the event. Each submission gets its own
             folder.
           </p>
         </header>
+
 
         <Card>
           <CardContent className="pt-6">
