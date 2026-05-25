@@ -263,14 +263,20 @@ function SubmitPage() {
     <main className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto max-w-2xl">
         <header className="mb-8 text-center">
+          <img
+            src={tkmLogo}
+            alt="Toloba ul Kulliyaat il Mumenoon"
+            className="mx-auto mb-4 h-28 w-auto"
+          />
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Miqaat Photo & Video Submission
+            Toloba ul Kulliyaat il Mumenoon — Miqaat / Event Photos
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Share photos and videos from the event. Each submission gets its own
             folder.
           </p>
         </header>
+
 
         <Card>
           <CardContent className="pt-6">
