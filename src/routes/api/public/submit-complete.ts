@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/public/submit-complete")({
         const parsed = completeRequestSchema.safeParse(body);
         if (!parsed.success) {
           return Response.json(
-            { error: z.treeifyError(parsed.error) },
+            { error: parsed.error.flatten() },
             { status: 400 },
           );
         }

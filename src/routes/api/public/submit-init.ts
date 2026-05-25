@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
         const parsed = initRequestSchema.safeParse(body);
         if (!parsed.success) {
           return Response.json(
-            { error: z.treeifyError(parsed.error) },
+            { error: parsed.error.flatten() },
             { status: 400 },
           );
         }
