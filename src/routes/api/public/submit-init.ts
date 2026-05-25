@@ -54,6 +54,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
             miqaatDate,
             eventName,
             itsNumber,
+            markaz,
           });
           const folderPath = `${LOG_FOLDER}/${folderName}`;
           const folder = await ensureFolder(folderPath);
