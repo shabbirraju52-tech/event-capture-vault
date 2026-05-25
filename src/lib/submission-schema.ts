@@ -14,14 +14,14 @@ export type SubmissionMeta = z.infer<typeof submissionMetaSchema>;
 
 export const fileDescriptorSchema = z.object({
   name: z.string().min(1).max(255),
-  size: z.number().int().min(1).max(2 * 1024 * 1024 * 1024), // 2 GB cap per file
+  size: z.number().int().min(1).max(50 * 1024 * 1024 * 1024), // 50 GB cap per file
   type: z.string().max(255),
 });
 
 export type FileDescriptor = z.infer<typeof fileDescriptorSchema>;
 
 export const initRequestSchema = submissionMetaSchema.extend({
-  files: z.array(fileDescriptorSchema).min(1, "Add at least one file").max(50),
+  files: z.array(fileDescriptorSchema).min(1, "Add at least one file").max(200),
 });
 
 export const completeRequestSchema = submissionMetaSchema.extend({
@@ -31,4 +31,4 @@ export const completeRequestSchema = submissionMetaSchema.extend({
 });
 
 export const ACCEPTED_MIME_PREFIXES = ["image/", "video/"];
-export const MAX_TOTAL_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB total per submission
+export const MAX_TOTAL_BYTES = 100 * 1024 * 1024 * 1024; // 100 GB total per submission
