@@ -257,6 +257,7 @@ function SubmitPage() {
                   eventName: "",
                   submitterName: "",
                   itsNumber: "",
+                  markaz: undefined,
                   miqaatDate: new Date().toISOString().slice(0, 10),
                 });
               }}
