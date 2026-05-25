@@ -25,6 +25,7 @@ export const Route = createFileRoute("/api/public/submit-complete")({
           eventName,
           submitterName,
           itsNumber,
+          markaz,
           miqaatDate,
           fileCount,
         } = parsed.data;
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/api/public/submit-complete")({
             eventName,
             submitterName,
             itsNumber,
+            markaz,
             miqaatDate,
             fileCount,
             folderLink,
