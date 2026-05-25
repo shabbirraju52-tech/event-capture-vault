@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+export const MARKAZ_OPTIONS = [
+  "Fakhri",
+  "Jamali",
+  "Badri",
+  "Ardiya",
+  "Other",
+] as const;
+
 export const submissionMetaSchema = z.object({
   eventName: z.string().trim().min(1, "Event name is required").max(120),
   submitterName: z.string().trim().min(1, "Your name is required").max(120),
@@ -7,6 +15,9 @@ export const submissionMetaSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{8}$/, "ITS number must be exactly 8 digits"),
+  markaz: z.enum(MARKAZ_OPTIONS, {
+    message: "Please select a markaz",
+  }),
   miqaatDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date is required"),
 });
 
