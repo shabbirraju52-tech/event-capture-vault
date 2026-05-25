@@ -10,33 +10,57 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicSubmitInitRouteImport } from './routes/api/public/submit-init'
+import { Route as ApiPublicSubmitCompleteRouteImport } from './routes/api/public/submit-complete'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSubmitInitRoute = ApiPublicSubmitInitRouteImport.update({
+  id: '/api/public/submit-init',
+  path: '/api/public/submit-init',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSubmitCompleteRoute = ApiPublicSubmitCompleteRouteImport.update({
+  id: '/api/public/submit-complete',
+  path: '/api/public/submit-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/public/submit-complete': typeof ApiPublicSubmitCompleteRoute
+  '/api/public/submit-init': typeof ApiPublicSubmitInitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/public/submit-complete': typeof ApiPublicSubmitCompleteRoute
+  '/api/public/submit-init': typeof ApiPublicSubmitInitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/public/submit-complete': typeof ApiPublicSubmitCompleteRoute
+  '/api/public/submit-init': typeof ApiPublicSubmitInitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/public/submit-complete' | '/api/public/submit-init'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/public/submit-complete' | '/api/public/submit-init'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/public/submit-complete'
+    | '/api/public/submit-init'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiPublicSubmitCompleteRoute: typeof ApiPublicSubmitCompleteRoute
+  ApiPublicSubmitInitRoute: typeof ApiPublicSubmitInitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,12 +72,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/submit-init': {
+      id: '/api/public/submit-init'
+      path: '/api/public/submit-init'
+      fullPath: '/api/public/submit-init'
+      preLoaderRoute: typeof ApiPublicSubmitInitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/submit-complete': {
+      id: '/api/public/submit-complete'
+      path: '/api/public/submit-complete'
+      fullPath: '/api/public/submit-complete'
+      preLoaderRoute: typeof ApiPublicSubmitCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiPublicSubmitCompleteRoute: ApiPublicSubmitCompleteRoute,
+  ApiPublicSubmitInitRoute: ApiPublicSubmitInitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
