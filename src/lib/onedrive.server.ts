@@ -54,9 +54,11 @@ export function buildFolderName(opts: {
   miqaatDate: string;
   eventName: string;
   itsNumber: string;
+  markaz?: string;
 }): string {
   const shortId = Math.random().toString(36).slice(2, 8);
-  return `${opts.miqaatDate}_${slugify(opts.eventName)}_${opts.itsNumber}_${shortId}`;
+  const markazPart = opts.markaz ? `_${slugify(opts.markaz)}` : "";
+  return `${opts.miqaatDate}_${slugify(opts.eventName)}${markazPart}_${opts.itsNumber}_${shortId}`;
 }
 
 /** Ensure a folder exists at the given path under the drive root. */
