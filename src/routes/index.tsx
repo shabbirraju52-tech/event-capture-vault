@@ -213,6 +213,11 @@ function SubmitPage() {
       <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-xl">
           <CardHeader className="text-center">
+            <img
+              src={tkmLogo}
+              alt="Toloba ul Kulliyaat il Mumenoon"
+              className="mx-auto mb-4 h-24 w-auto"
+            />
             <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
@@ -221,6 +226,7 @@ function SubmitPage() {
               Your files have been uploaded and the entry is logged.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-4">
             <a
               href={success.folderLink}
