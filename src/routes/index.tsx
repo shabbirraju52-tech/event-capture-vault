@@ -95,7 +95,7 @@ function SubmitPage() {
       }
       next.push({ file: f, progress: 0, status: "pending" });
     }
-    setFiles((prev) => [...prev, ...next].slice(0, 50));
+    setFiles((prev) => [...prev, ...next].slice(0, 200));
   }
 
   function removeFile(index: number) {
