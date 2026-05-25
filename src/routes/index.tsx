@@ -17,20 +17,22 @@ import {
   type SubmissionMeta,
   ACCEPTED_MIME_PREFIXES,
 } from "@/lib/submission-schema";
+import tkmLogo from "@/assets/tkm-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Event Photo & Video Submission" },
+      { title: "TKM Miqaat / Event Photos Submission" },
       {
         name: "description",
         content:
-          "Upload photos and videos from miqaats and events. Files are stored in OneDrive and logged automatically.",
+          "Toloba ul Kulliyaat il Mumenoon — submit photos and videos from miqaats and events.",
       },
     ],
   }),
   component: SubmitPage,
 });
+
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB chunks for uploadUrl PUTs
 
