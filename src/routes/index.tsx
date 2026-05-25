@@ -90,9 +90,11 @@ function SubmitPage() {
       eventName: "",
       submitterName: "",
       itsNumber: "",
+      markaz: undefined,
       miqaatDate: new Date().toISOString().slice(0, 10),
     },
   });
+  const markazValue = form.watch("markaz");
 
   function addFiles(list: FileList | null) {
     if (!list) return;
