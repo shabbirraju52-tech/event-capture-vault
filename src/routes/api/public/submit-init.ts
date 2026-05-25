@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
             { status: 400 },
           );
         }
-        const { files, eventName, submitterName, itsNumber, miqaatDate } =
+        const { files, eventName, submitterName, itsNumber, markaz, miqaatDate } =
           parsed.data;
 
         // Validate file types and total size.
