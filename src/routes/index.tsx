@@ -345,19 +345,50 @@ function SubmitPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="miqaatDate">Date of Miqaat</Label>
-                <Input
-                  id="miqaatDate"
-                  type="date"
-                  {...form.register("miqaatDate")}
-                  disabled={submitting}
-                />
-                {form.formState.errors.miqaatDate && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.miqaatDate.message}
-                  </p>
-                )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="markaz">Markaz</Label>
+                  <Select
+                    value={markazValue ?? ""}
+                    onValueChange={(v) =>
+                      form.setValue("markaz", v as SubmissionMeta["markaz"], {
+                        shouldValidate: true,
+                      })
+                    }
+                    disabled={submitting}
+                  >
+                    <SelectTrigger id="markaz">
+                      <SelectValue placeholder="Select markaz" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MARKAZ_OPTIONS.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.formState.errors.markaz && (
+                    <p className="text-xs text-destructive">
+                      {form.formState.errors.markaz.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="miqaatDate">Date of Miqaat</Label>
+                  <Input
+                    id="miqaatDate"
+                    type="date"
+                    {...form.register("miqaatDate")}
+                    disabled={submitting}
+                  />
+                  {form.formState.errors.miqaatDate && (
+                    <p className="text-xs text-destructive">
+                      {form.formState.errors.miqaatDate.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
