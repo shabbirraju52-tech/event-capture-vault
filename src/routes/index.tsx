@@ -359,7 +359,7 @@ function SubmitPage() {
                     Click to add files
                   </span>
                   <span className="mt-1 text-xs text-muted-foreground">
-                    Images and videos · up to 50 files · up to 5 GB total
+                    Images and videos · up to 200 files · up to 100 GB total
                   </span>
                   <input
                     id="file-input"
