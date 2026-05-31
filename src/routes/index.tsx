@@ -311,6 +311,7 @@ function SubmitPage() {
                 setSuccess(null);
                 setFiles([]);
                 form.reset({
+                  submissionType: undefined,
                   eventName: "",
                   submitterName: "",
                   itsNumber: "",
