@@ -43,29 +43,66 @@ export const Route = createFileRoute("/")({
 });
 
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB chunks for uploadUrl PUTs
+const CHUNK_SIZE = 20 * 1024 * 1024; // 20 MB chunks (multiple of 320 KiB, well under Graph's 60 MiB cap)
+const SMALL_FILE_THRESHOLD = 4 * 1024 * 1024; // single PUT for files ≤ 4 MB
+const UPLOAD_CONCURRENCY = 4; // files uploaded in parallel
+const MAX_RETRIES = 3;
+
+async function putChunkWithRetry(
+  uploadUrl: string,
+  chunk: Blob,
+  start: number,
+  end: number,
+  totalSize: number,
+): Promise<void> {
+  let attempt = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Length": String(end - start),
+          "Content-Range": `bytes ${start}-${end - 1}/${totalSize}`,
+        },
+        body: chunk,
+      });
+      if (res.ok || res.status === 202 || res.status === 201 || res.status === 200) {
+        return;
+      }
+      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        attempt++;
+        continue;
+      }
+      const text = await res.text();
+      throw new Error(`Upload failed at ${start}: ${res.status} ${text}`);
+    } catch (err) {
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        attempt++;
+        continue;
+      }
+      throw err;
+    }
+  }
+}
 
 async function uploadFileToOneDrive(
   file: File,
   uploadUrl: string,
   onProgress: (pct: number) => void,
 ): Promise<void> {
+  if (file.size <= SMALL_FILE_THRESHOLD) {
+    await putChunkWithRetry(uploadUrl, file, 0, file.size, file.size);
+    onProgress(100);
+    return;
+  }
   let start = 0;
   while (start < file.size) {
     const end = Math.min(start + CHUNK_SIZE, file.size);
     const chunk = file.slice(start, end);
-    const res = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Length": String(end - start),
-        "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-      },
-      body: chunk,
-    });
-    if (!res.ok && res.status !== 202 && res.status !== 201 && res.status !== 200) {
-      const text = await res.text();
-      throw new Error(`Upload failed at ${start}: ${res.status} ${text}`);
-    }
+    await putChunkWithRetry(uploadUrl, chunk, start, end, file.size);
     start = end;
     onProgress(Math.round((start / file.size) * 100));
   }
@@ -146,49 +183,66 @@ function SubmitPage() {
         uploads: Array<{ name: string; uploadUrl: string }>;
       };
 
-      // 2. Upload each file directly to OneDrive
+      // 2. Upload files in parallel (worker pool)
       const total = files.reduce((sum, f) => sum + f.file.size, 0);
-      let uploadedBytes = 0;
-      for (let i = 0; i < files.length; i++) {
-        const up = init.uploads[i];
-        setFiles((prev) =>
-          prev.map((f, idx) =>
-            idx === i ? { ...f, status: "uploading", progress: 0 } : f,
-          ),
-        );
-        try {
-          await uploadFileToOneDrive(files[i].file, up.uploadUrl, (pct) => {
+      const inflight = new Array<number>(files.length).fill(0);
+      let completedBytes = 0;
+
+      const updateOverall = () => {
+        const sum = completedBytes + inflight.reduce((a, b) => a + b, 0);
+        setOverallProgress(Math.round((sum / total) * 100));
+      };
+
+      let nextIndex = 0;
+      const worker = async () => {
+        while (true) {
+          const i = nextIndex++;
+          if (i >= files.length) return;
+          const up = init.uploads[i];
+          const fileSize = files[i].file.size;
+          setFiles((prev) =>
+            prev.map((f, idx) =>
+              idx === i ? { ...f, status: "uploading", progress: 0 } : f,
+            ),
+          );
+          try {
+            await uploadFileToOneDrive(files[i].file, up.uploadUrl, (pct) => {
+              setFiles((prev) =>
+                prev.map((f, idx) =>
+                  idx === i ? { ...f, progress: pct } : f,
+                ),
+              );
+              inflight[i] = (fileSize * pct) / 100;
+              updateOverall();
+            });
+            inflight[i] = 0;
+            completedBytes += fileSize;
+            updateOverall();
             setFiles((prev) =>
               prev.map((f, idx) =>
-                idx === i ? { ...f, progress: pct } : f,
+                idx === i ? { ...f, status: "done", progress: 100 } : f,
               ),
             );
-            const fileUploaded = (files[i].file.size * pct) / 100;
-            setOverallProgress(
-              Math.round(((uploadedBytes + fileUploaded) / total) * 100),
+          } catch (err) {
+            setFiles((prev) =>
+              prev.map((f, idx) =>
+                idx === i
+                  ? {
+                      ...f,
+                      status: "error",
+                      error: err instanceof Error ? err.message : "Upload failed",
+                    }
+                  : f,
+              ),
             );
-          });
-          uploadedBytes += files[i].file.size;
-          setFiles((prev) =>
-            prev.map((f, idx) =>
-              idx === i ? { ...f, status: "done", progress: 100 } : f,
-            ),
-          );
-        } catch (err) {
-          setFiles((prev) =>
-            prev.map((f, idx) =>
-              idx === i
-                ? {
-                    ...f,
-                    status: "error",
-                    error: err instanceof Error ? err.message : "Upload failed",
-                  }
-                : f,
-            ),
-          );
-          throw err;
+            throw err;
+          }
         }
-      }
+      };
+
+      const workerCount = Math.min(UPLOAD_CONCURRENCY, files.length);
+      await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
 
       // 3. Complete: get share link + log to Excel
       const completeRes = await fetch("/api/public/submit-complete", {
