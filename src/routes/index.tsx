@@ -25,6 +25,7 @@ import {
   type SubmissionMeta,
   ACCEPTED_MIME_PREFIXES,
   MARKAZ_OPTIONS,
+  SUBMISSION_TYPE_OPTIONS,
 } from "@/lib/submission-schema";
 import tkmLogo from "@/assets/tkm-logo.png";
 
