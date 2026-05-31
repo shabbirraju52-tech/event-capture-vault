@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
             folderId: folder.id,
             folderPath,
             uploads,
-            meta: { eventName, submitterName, itsNumber, markaz, miqaatDate },
+            meta: { eventName, submitterName, itsNumber, markaz, miqaatDate, submissionType },
           });
         } catch (err) {
           console.error("submit-init failed", err);
