@@ -356,6 +356,37 @@ function SubmitPage() {
               noValidate
             >
               <div className="space-y-2">
+                <Label htmlFor="submissionType">Type</Label>
+                <Select
+                  value={submissionTypeValue ?? ""}
+                  onValueChange={(v) =>
+                    form.setValue(
+                      "submissionType",
+                      v as SubmissionMeta["submissionType"],
+                      { shouldValidate: true },
+                    )
+                  }
+                  disabled={submitting}
+                >
+                  <SelectTrigger id="submissionType">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBMISSION_TYPE_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.submissionType && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.submissionType.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="eventName">Name of Miqaat / Event</Label>
                 <Input
                   id="eventName"
