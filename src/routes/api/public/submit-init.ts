@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
             { status: 400 },
           );
         }
-        const { files, eventName, submitterName, itsNumber, markaz, miqaatDate } =
+        const { files, eventName, submitterName, itsNumber, markaz, miqaatDate, submissionType } =
           parsed.data;
 
         // Validate file types and total size.
@@ -55,6 +55,7 @@ export const Route = createFileRoute("/api/public/submit-init")({
             eventName,
             itsNumber,
             markaz,
+            submissionType,
           });
           const folderPath = `${LOG_FOLDER}/${folderName}`;
           const folder = await ensureFolder(folderPath);
