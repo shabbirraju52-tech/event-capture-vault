@@ -125,6 +125,7 @@ function SubmitPage() {
   const form = useForm<SubmissionMeta>({
     resolver: zodResolver(submissionMetaSchema),
     defaultValues: {
+      submissionType: undefined,
       eventName: "",
       submitterName: "",
       itsNumber: "",
@@ -133,6 +134,7 @@ function SubmitPage() {
     },
   });
   const markazValue = form.watch("markaz");
+  const submissionTypeValue = form.watch("submissionType");
 
   function addFiles(list: FileList | null) {
     if (!list) return;
