@@ -25,6 +25,7 @@ import {
   type SubmissionMeta,
   ACCEPTED_MIME_PREFIXES,
   MARKAZ_OPTIONS,
+  SUBMISSION_TYPE_OPTIONS,
 } from "@/lib/submission-schema";
 import tkmLogo from "@/assets/tkm-logo.png";
 
@@ -124,6 +125,7 @@ function SubmitPage() {
   const form = useForm<SubmissionMeta>({
     resolver: zodResolver(submissionMetaSchema),
     defaultValues: {
+      submissionType: undefined,
       eventName: "",
       submitterName: "",
       itsNumber: "",
@@ -132,6 +134,7 @@ function SubmitPage() {
     },
   });
   const markazValue = form.watch("markaz");
+  const submissionTypeValue = form.watch("submissionType");
 
   function addFiles(list: FileList | null) {
     if (!list) return;
@@ -308,6 +311,7 @@ function SubmitPage() {
                 setSuccess(null);
                 setFiles([]);
                 form.reset({
+                  submissionType: undefined,
                   eventName: "",
                   submitterName: "",
                   itsNumber: "",
@@ -351,6 +355,37 @@ function SubmitPage() {
               className="space-y-5"
               noValidate
             >
+              <div className="space-y-2">
+                <Label htmlFor="submissionType">Type</Label>
+                <Select
+                  value={submissionTypeValue ?? ""}
+                  onValueChange={(v) =>
+                    form.setValue(
+                      "submissionType",
+                      v as SubmissionMeta["submissionType"],
+                      { shouldValidate: true },
+                    )
+                  }
+                  disabled={submitting}
+                >
+                  <SelectTrigger id="submissionType">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBMISSION_TYPE_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.submissionType && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.submissionType.message}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="eventName">Name of Miqaat / Event</Label>
                 <Input
