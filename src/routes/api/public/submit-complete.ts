@@ -28,12 +28,14 @@ export const Route = createFileRoute("/api/public/submit-complete")({
           markaz,
           miqaatDate,
           fileCount,
+          submissionType,
         } = parsed.data;
 
         try {
           const folderLink = await createViewLink(folderId);
           await appendLogRow([
             new Date().toISOString(),
+            submissionType,
             eventName,
             submitterName,
             itsNumber,
