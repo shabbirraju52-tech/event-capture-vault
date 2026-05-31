@@ -213,13 +213,13 @@ async function ensureLogTable(itemId: string): Promise<void> {
     const data = (await listRes.json()) as { value?: Array<{ name: string }> };
     if (data.value?.some((t) => t.name === LOG_TABLE)) return;
   }
-  // Add a table over A1:H1 (8 header columns).
+  // Add a table over A1:I1 (9 header columns).
   const addRes = await fetch(
     `${EXCEL_GATEWAY}/me/drive/items/${itemId}/workbook/worksheets/Submissions/tables/add`,
     {
       method: "POST",
       headers: excelHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ address: "A1:H1", hasHeaders: true }),
+      body: JSON.stringify({ address: "A1:I1", hasHeaders: true }),
     },
   );
   await check(addRes, "Excel tables/add");
