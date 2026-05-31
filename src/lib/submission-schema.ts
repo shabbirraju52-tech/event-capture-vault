@@ -8,7 +8,12 @@ export const MARKAZ_OPTIONS = [
   "Other",
 ] as const;
 
+export const SUBMISSION_TYPE_OPTIONS = ["Miqaat", "Event", "Other"] as const;
+
 export const submissionMetaSchema = z.object({
+  submissionType: z.enum(SUBMISSION_TYPE_OPTIONS, {
+    message: "Please select a type",
+  }),
   eventName: z.string().trim().min(1, "Event name is required").max(120),
   submitterName: z.string().trim().min(1, "Your name is required").max(120),
   itsNumber: z
