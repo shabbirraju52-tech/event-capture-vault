@@ -55,10 +55,12 @@ export function buildFolderName(opts: {
   eventName: string;
   itsNumber: string;
   markaz?: string;
+  submissionType?: string;
 }): string {
   const shortId = Math.random().toString(36).slice(2, 6);
+  const typePart = opts.submissionType ? `${slugify(opts.submissionType)}_` : "";
   const markazPart = opts.markaz ? `_${slugify(opts.markaz)}` : "";
-  return `${slugify(opts.eventName)}_${opts.miqaatDate}${markazPart}_${shortId}`;
+  return `${typePart}${slugify(opts.eventName)}_${opts.miqaatDate}${markazPart}_${shortId}`;
 }
 
 /** Ensure a folder exists at the given path under the drive root. */
