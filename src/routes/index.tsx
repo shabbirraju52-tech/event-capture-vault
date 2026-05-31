@@ -338,8 +338,8 @@ function SubmitPage() {
             alt="Toloba ul Kulliyaat il Mumenoon"
             className="mx-auto mb-4 h-28 w-auto"
           />
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Toloba ul Kulliyaat il Mumenoon — Miqaat / Event Photos
+          <h1 className="text-3xl font-bold tracking-tight text-foreground text-center whitespace-pre-line">
+            {"Toloba ul Kulliyaat il Mumenoon — \nMiqaat / Event Photos\nطلباء الكليات المؤمنون\n"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Share photos and videos from the event. Each submission gets its own
