@@ -43,29 +43,66 @@ export const Route = createFileRoute("/")({
 });
 
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB chunks for uploadUrl PUTs
+const CHUNK_SIZE = 20 * 1024 * 1024; // 20 MB chunks (multiple of 320 KiB, well under Graph's 60 MiB cap)
+const SMALL_FILE_THRESHOLD = 4 * 1024 * 1024; // single PUT for files ≤ 4 MB
+const UPLOAD_CONCURRENCY = 4; // files uploaded in parallel
+const MAX_RETRIES = 3;
+
+async function putChunkWithRetry(
+  uploadUrl: string,
+  chunk: Blob,
+  start: number,
+  end: number,
+  totalSize: number,
+): Promise<void> {
+  let attempt = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      const res = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Length": String(end - start),
+          "Content-Range": `bytes ${start}-${end - 1}/${totalSize}`,
+        },
+        body: chunk,
+      });
+      if (res.ok || res.status === 202 || res.status === 201 || res.status === 200) {
+        return;
+      }
+      if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        attempt++;
+        continue;
+      }
+      const text = await res.text();
+      throw new Error(`Upload failed at ${start}: ${res.status} ${text}`);
+    } catch (err) {
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        attempt++;
+        continue;
+      }
+      throw err;
+    }
+  }
+}
 
 async function uploadFileToOneDrive(
   file: File,
   uploadUrl: string,
   onProgress: (pct: number) => void,
 ): Promise<void> {
+  if (file.size <= SMALL_FILE_THRESHOLD) {
+    await putChunkWithRetry(uploadUrl, file, 0, file.size, file.size);
+    onProgress(100);
+    return;
+  }
   let start = 0;
   while (start < file.size) {
     const end = Math.min(start + CHUNK_SIZE, file.size);
     const chunk = file.slice(start, end);
-    const res = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Length": String(end - start),
-        "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-      },
-      body: chunk,
-    });
-    if (!res.ok && res.status !== 202 && res.status !== 201 && res.status !== 200) {
-      const text = await res.text();
-      throw new Error(`Upload failed at ${start}: ${res.status} ${text}`);
-    }
+    await putChunkWithRetry(uploadUrl, chunk, start, end, file.size);
     start = end;
     onProgress(Math.round((start / file.size) * 100));
   }
