@@ -1,20 +1,29 @@
-## Raise upload limits
+## Speed up uploads
 
-Bump the caps in both the schema (server-enforced) and the form copy (client-shown).
+All changes are in `src/routes/index.tsx`. No backend changes.
 
 ### Changes
 
-**`src/lib/submission-schema.ts`**
-- `fileDescriptorSchema.size`: max `2 GB` → `50 GB` (50 * 1024³)
-- `initRequestSchema.files`: max `50` → `200`
-- `MAX_TOTAL_BYTES`: `5 GB` → `100 GB`
+**Larger chunks**
+- `CHUNK_SIZE`: 5 MB → **20 MB** (multiple of 320 KiB, well under Graph's 60 MiB cap). Fewer round-trips per file.
 
-**`src/routes/index.tsx`**
-- Dropzone helper text: "up to 50 files · up to 5 GB total" → "up to 200 files · up to 100 GB total"
-- `setFiles(... .slice(0, 50))` → `.slice(0, 200)`
+**Small-file fast path**
+- New `SMALL_FILE_THRESHOLD = 4 MB`. Files at or below this size are sent in a **single PUT** to the upload session URL (full `Content-Range: bytes 0-(size-1)/size`) instead of the chunk loop. Saves an entire HTTP round-trip per small photo.
 
-No backend/auth/OneDrive changes — OneDrive's per-file ceiling (250 GB) is well above the new 50 GB cap, and upload sessions already handle large chunked PUTs.
+**Parallel file uploads**
+- New `UPLOAD_CONCURRENCY = 4`. Replace the sequential `for (let i = 0; i < files.length; i++)` loop in `onSubmit` with a small worker pool: 4 files upload concurrently; as each finishes, the next pending file starts.
+- Track `uploadedBytes` and per-file in-flight bytes in a ref/closure so the overall progress bar stays accurate across parallel workers.
+- Per-file status updates (`uploading` / `done` / `error`) keep working the same way.
 
-### Note on very large uploads
+**Retry with backoff**
+- Each chunk PUT goes through a `putChunkWithRetry` helper: up to **3 retries** with 1s / 2s / 4s backoff on `429`, `5xx`, or network errors. One flaky chunk no longer kills the whole submission.
 
-Files in the tens of GB take a long time and depend on the user's connection staying alive. The chunked upload retries each 5 MB chunk on failure, but if the tab closes mid-file the upload restarts from the beginning of that file. If this becomes a real issue we can add resumable session persistence later.
+### Why these help
+- Latency-bound throughput: a 1 GB video previously did ~200 sequential 5 MB PUTs. Now it's ~50 PUTs at 20 MB each.
+- Bandwidth utilization: with 4 parallel files, the browser can saturate the uplink even when individual files have idle gaps between chunks.
+- Resilience: transient OneDrive 503s and brief network blips retry transparently instead of aborting the batch.
+
+### Out of scope
+- No change to OneDrive limits or `submit-init` (sessions are already created in parallel via `Promise.all`).
+- No resumable-on-tab-close persistence (still a future enhancement).
+- Concurrency is hard-coded to 4; no UI control.
